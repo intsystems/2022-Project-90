@@ -17,3 +17,6 @@
 1. `conda create -n paper_env python`
 2. `conda activate paper_env`
 3. `pip install -r ./code/requirements.txt`
+
+**Текст статьи:** [eng](https://github.com/intsystems/2022-Project-90/blob/main/eng_paper/Vladimirov2022RestoringHandMovementENG.pdf), [rus](https://github.com/intsystems/2022-Project-90/blob/main/paper/Vladimirov2022RestoringHandMovement.pdf)
+
