@@ -3,11 +3,7 @@ import pandas as pd
 import numpy as np
 import pyEDM as edm
 
-
-class PredictionModelInterface:
-    def __init__(self): pass
-
-    def predict(self, input, target): raise NotImplementedError
+from torch_models.prediction_interface import PredictionModelInterface
 
 
 class SMapLegacy(PredictionModelInterface):
