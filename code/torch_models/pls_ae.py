@@ -1,9 +1,14 @@
+import math
 import torch
 import torch.nn.functional as F
 
 from typing import Optional
 from torch_models.autoencoders import AutoEncoder
 from torch_models.prediction_models import PredictionModelInterface
+
+
+def standard_norm_pdf(x: torch.Tensor) -> torch.Tensor:
+    return 1 / (2 * math.pi)**0.5 * torch.exp(-0.5 * x**2)
 
 
 class PLS_AE:
@@ -91,15 +96,16 @@ class PLS_AE:
         assert x_latent.size() == y_latent.size()
         assert x_latent.ndim == 2
 
-        # batch_size = x_hidden.shape[0]
+        k_objects, latent_dim = x_latent.shape
         x_latent_centered = x_latent - x_latent.mean(dim=1, keepdim=True)
         y_latent_centered = y_latent - y_latent.mean(dim=1, keepdim=True)
 
         cov_mat = x_latent_centered.T @ y_latent_centered
         features_cov = cov_mat.diag()
         trace = features_cov.sum()
+        trace /= (latent_dim * k_objects**0.5)
 
-        return 1.0 / (1.0 + torch.square(trace) / 10.0)
+        return standard_norm_pdf(trace)
 
     @staticmethod
     def calc_recovering_loss(input: torch.Tensor, recov_input: torch.Tensor):

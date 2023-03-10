@@ -14,8 +14,8 @@ class PLS_CCM(PLS_AE):
                  source: Dict[str, torch.Tensor],
                  target: Dict[str, torch.Tensor],
                  ccm_measure: AbstractCCMMetric):
-        # input = [n_samples, n_features]
-        # target = [n_samples, n_targets]
+        # input.shape = [n_samples, n_features]
+        # target.shape = [n_samples, n_targets]
         super().__init__(x_autoenc, y_autoenc)
 
         self.ccm_measure = ccm_measure
@@ -23,10 +23,9 @@ class PLS_CCM(PLS_AE):
         self.ccm_valid = ccm_measure(source.get('val'), target.get('val'))
 
     def calc_ccm_loss(self, x_batch: torch.Tensor, y_batch: torch.Tensor):
-        x_latent, y_latent = self.get_latent(x_batch, y_batch)
-        latent_ccm = self.ccm_measure(x_latent, y_latent)
-
         if self.is_training:
+            x_latent, y_latent = self.get_latent(x_batch, y_batch)
+            latent_ccm = self.ccm_measure(x_latent, y_latent)
             return F.mse_loss(latent_ccm, self.ccm_train)
         else:
-            return F.mse_loss(latent_ccm, self.ccm_valid)
+            return torch.FloatTensor([0.0])

@@ -1,6 +1,15 @@
 import numpy as np
 
 
+def column_name_to_ind(s: str) -> int:
+    if s[0] == 'x':
+        return 2 * int(s[2:])
+    if s[0] == 'y':
+        return 2 * int(s[2:]) + 1
+
+    return -1
+
+
 E = 3
 THETA = 4
 
@@ -8,23 +17,21 @@ TARGET_COLUMNS = ['acc_z', 'acc_y', 'acc_x', 'gyr_z', 'gyr_y', 'gyr_x']
 TARGET_SIZE = len(TARGET_COLUMNS)
 
 KEYPOINTS_CNT = 68
-VIDEO_COLUMNS = np.array(['y_0', 'y_2', 'y_4', 'x_5', 'y_5', 'x_6', 'y_6', 
-                          'x_7', 'y_7', 'x_8', 'y_8', 'x_9', 'y_9', 'y_10', 
-                          'y_11', 'y_12', 'x_13', 'y_13', 'y_14', 'x_15', 
-                          'y_15', 'y_16', 'x_17', 'y_17', 'y_18', 'y_19',
-                          'x_20', 'y_20', 'x_21', 'y_21', 'x_22', 'y_22', 
-                          'x_23', 'y_23', 'x_24', 'y_24', 'x_25', 'y_25', 
-                          'x_26', 'y_26', 'y_27', 'x_28', 'y_30', 'x_31', 
-                          'y_31', 'y_33', 'y_35', 'y_36', 'x_39', 'y_40',
-                          'y_43', 'y_51'])
-EXTRA_VIDEO_COLS = [0, 2, 3, 4, 6, 7, 8, 20, 22, 24, 28, 32, 36, 38, 54, 57, 58,
-                    59, 60, 64, 65, 66, 68, 69, 70, 72, 74, 75, 76, 77, 79, 80,
-                    82, 83, 84, 85, 86, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 
-                    98, 99, 100, 101, 102, 104, 105, 106, 107, 108, 109, 110,
-                    111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122,
-                    123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134,
-                    135]
+VIDEO_COLUMNS = np.array([
+    'x_0', 'y_0', 'x_8', 'y_8', 'x_10', 'y_10', 'x_51', 'y_51'
+])
+video_columns_indices = list(map(column_name_to_ind, VIDEO_COLUMNS))
 
-SUBDIRS = ('round_and_round', 'chaotic_1', 'chaotic_2', 'chaotic_3', 
-           'cyclic_1', 'cyclic_2')
+EXCESS_VIDEO_COLS = list(range(KEYPOINTS_CNT * 2))
+for ind in video_columns_indices:
+    EXCESS_VIDEO_COLS.remove(ind)
+
+SUBDIRS = (
+    'round_and_round',
+    'chaotic_1',
+    'chaotic_2',
+    'chaotic_3',
+    'cyclic_1',
+    'cyclic_2'
+)
 PRED_METHODS = ('ccm', 'pls', 'cca', 'naive')

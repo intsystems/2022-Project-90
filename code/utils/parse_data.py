@@ -36,7 +36,7 @@ def parse_video(filename: str) -> pd.DataFrame:
     video_data = video_data['keypoints'].apply(pd.Series)
     video_data.drop(columns=range(2, KEYPOINTS_CNT * 3, 3), inplace=True)
     video_data.columns = range(video_data.shape[1])
-    video_data.drop(columns=EXTRA_VIDEO_COLS, inplace=True)
+    video_data.drop(columns=EXCESS_VIDEO_COLS, inplace=True)
     video_data.columns = VIDEO_COLUMNS
 
     return video_data
