@@ -60,7 +60,7 @@ class AbstractCCMMetric:
         self.t_scheduler = t_scheduler
 
     def __call__(self, x_elems: torch.Tensor, y_elems: torch.Tensor):
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def _check_arguments(self, x_elems: torch.Tensor, y_elems: torch.Tensor):
         assert x_elems.size()[0] == y_elems.size()[0]
@@ -85,8 +85,8 @@ class CanonicalCCM(AbstractCCMMetric):
             return cov / x_std / y_std
 
     def __call__(self, x_elems: torch.Tensor, y_elems: torch.Tensor):
-        # x_elems = [n_samples, n_features]
-        # y_elems = [n_samples, n_targets]
+        # x_elems.shape = [n_samples, n_features]
+        # y_elems.shape = [n_samples, n_targets]
         self._check_arguments(x_elems, y_elems)
 
         manifold_x_elems, last_x_elem = x_elems[:-1, :], x_elems[-1, :]

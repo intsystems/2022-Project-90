@@ -11,13 +11,15 @@ class SMapLegacy(PredictionModelInterface):
                  libsize: int,
                  predsize: int,
                  theta: float,
-                 solver=None):
+                 solver=None,
+                 lib_pred_delta: int = 0):
         super().__init__()
 
         self.theta = theta
         self.solver = solver
         self.libsize = libsize
         self.predsize = predsize
+        self.lib_pred_delta = lib_pred_delta
 
     def predict(self, input: torch.Tensor, target: torch.Tensor):
         assert input.ndim == target.ndim == 2
@@ -35,8 +37,9 @@ class SMapLegacy(PredictionModelInterface):
         multi_data.insert(loc=0, column="time", value=range(1, n_objects + 1))
         multi_data.columns = list(map(str, multi_data.columns))
 
-        lib = f"1 {self.libsize}"
-        pred = f"{self.libsize + 1} {self.libsize + self.predsize}"
+        lib = f'1 {self.libsize}'
+        pred = f'{self.libsize + self.lib_pred_delta + 1} ' \
+               f'{self.libsize + self.lib_pred_delta + self.predsize}'
 
         predictions = []
 
