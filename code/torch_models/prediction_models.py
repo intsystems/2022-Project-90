@@ -1,61 +1,51 @@
+from typing import Optional
 import torch
-import pandas as pd
-import numpy as np
-import pyEDM as edm
-
-from torch_models.prediction_interface import PredictionModelInterface
 
 
-class SMapLegacy(PredictionModelInterface):
-    def __init__(self,
-                 libsize: int,
-                 predsize: int,
-                 theta: float,
-                 solver=None,
-                 lib_pred_delta: int = 0):
+class PredictionModelInterface:
+    def __init__(self): pass
+
+    def predict(self, inp: torch.Tensor) -> torch.Tensor:
+        raise NotImplementedError()
+
+
+class LSTM(PredictionModelInterface):
+    def __init__(self, **lstm_args):
         super().__init__()
 
-        self.theta = theta
-        self.solver = solver
-        self.libsize = libsize
-        self.predsize = predsize
-        self.lib_pred_delta = lib_pred_delta
+        self.model = torch.nn.LSTM(**lstm_args)
 
-    def predict(self, input: torch.Tensor, target: torch.Tensor):
-        assert input.ndim == target.ndim == 2
-        assert input.size()[0] == target.size()[0]
+    def forward(self,
+                inp: torch.Tensor,
+                h0: Optional[torch.Tensor] = None,
+                c0: Optional[torch.Tensor] = None
+                ) -> tuple:
+        # inp.shape = (seq_len, inp_dim)
+        # h0.shape = (num_layers, hid_dim)
+        # co.shape = (num_layers, hid_dim)
+        if h0 is None:
+            hid_size = (
+                (self.model.bidirectional + 1) * self.model.num_layers,
+                self.model.hidden_size if self.model.proj_size == 0 \
+                else self.model.proj_size
+            )
+            h0 = torch.zeros(hid_size).to(inp.device)
 
-        n_objects, n_features = input.size()
-        _, n_targets = target.size()
+        if c0 is None:
+            cell_size = (
+                (self.model.bidirectional + 1) * self.model.num_layers,
+                self.model.hidden_size
+            )
+            c0 = torch.zeros(cell_size).to(inp.device)
 
-        device = input.device
-        input = input.detach().numpy()
-        target = target.detach().numpy()
-        multi_data = np.hstack((input, target))
+        return self.model(inp, (h0, c0))
 
-        multi_data = pd.DataFrame(multi_data)
-        multi_data.insert(loc=0, column="time", value=range(1, n_objects + 1))
-        multi_data.columns = list(map(str, multi_data.columns))
+    def predict(self, inp: torch.Tensor) -> torch.Tensor:
+        # inp.shape = (seq_len, inp_dim)
+        # out.shape = (seq_len, proj_size or hid_dim)
+        self.model.eval()
 
-        lib = f'1 {self.libsize}'
-        pred = f'{self.libsize + self.lib_pred_delta + 1} ' \
-               f'{self.libsize + self.lib_pred_delta + self.predsize}'
+        with torch.no_grad():
+            out, (hn, cn) = self.forward(inp)
 
-        predictions = []
-
-        for i in range(n_targets):
-            target_ind = str(i + n_features)
-
-            target_preds = edm.SMap(dataFrame=multi_data,
-                                    lib=lib,
-                                    pred=pred,
-                                    embedded=True,
-                                    target=target_ind,
-                                    columns=list(map(str, range(n_features))) + [target_ind],
-                                    theta=self.theta,
-                                    solver=self.solver,
-                                    showPlot=False);
-
-            predictions.append(target_preds['predictions']['Predictions'].values[1:])
-
-        return torch.Tensor(np.array(predictions).T).to(device)
+        return out

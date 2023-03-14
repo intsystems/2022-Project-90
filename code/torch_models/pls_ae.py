@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 from typing import Optional
 from torch_models.autoencoders import AutoEncoder
-from torch_models.prediction_interface import PredictionModelInterface
+from torch_models.prediction_models import PredictionModelInterface
 
 
 def standard_norm_pdf(x: torch.Tensor) -> torch.Tensor:

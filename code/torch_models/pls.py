@@ -3,7 +3,7 @@ import torch
 from sklearn.cross_decomposition import PLSCanonical
 from typing import Optional
 
-from torch_models.prediction_interface import PredictionModelInterface
+from torch_models.prediction_models import PredictionModelInterface
 
 
 # The wrapper over PLSCanonical in sklearn
